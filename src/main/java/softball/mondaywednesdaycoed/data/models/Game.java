@@ -15,5 +15,7 @@ public record Game(
         Murray_Field,
         Rogers_Park,
         Donnelly_Field,
+        Library_1,
+        Library_2
     }
 }

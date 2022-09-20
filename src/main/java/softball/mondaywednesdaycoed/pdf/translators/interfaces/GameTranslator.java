@@ -1,9 +1,9 @@
-package softball.mondaywednesdaycoed.interfaces.pdf.translators;
+package softball.mondaywednesdaycoed.pdf.translators.interfaces;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.jetbrains.annotations.NotNull;
 import softball.mondaywednesdaycoed.data.models.Game;
-import softball.mondaywednesdaycoed.interfaces.pdf.implementations.SchedulePdfGameTranslator;
+import softball.mondaywednesdaycoed.pdf.translators.implementations.SchedulePdfGameTranslator;
 
 import java.util.function.Consumer;
 
