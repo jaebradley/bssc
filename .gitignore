@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Compiled class file
 *.class
 
@@ -26,3 +27,6 @@ hs_err_pid*
 .idea/*
 
 target/
+=======
+target/*
+>>>>>>> 0be4511 (Update)
