@@ -11,7 +11,18 @@ import java.util.stream.Stream;
 public class TeamLineTranslator implements softball.mondaywednesdaycoed.pdf.translators.interfaces.TeamLineTranslator {
     private static final Map<String, Team.Color> colorsByName = Stream.of(
             Map.entry("Maroon", Team.Color.Maroon),
-            Map.entry("Neon Pink", Team.Color.Neon_Pink)
+            Map.entry("Neon Pink", Team.Color.Neon_Pink),
+            Map.entry("Navy", Team.Color.Navy),
+            Map.entry("Gold", Team.Color.Gold),
+            Map.entry("Black", Team.Color.Black),
+            Map.entry("Charcoal", Team.Color.Charcoal),
+            Map.entry("Light Blue", Team.Color.Light_Blue),
+            Map.entry("Neon Blue", Team.Color.Neon_Blue),
+            Map.entry("Purple", Team.Color.Purple),
+            Map.entry("Burnt Orange", Team.Color.Burnt_Orange),
+            Map.entry("Vegas Gold", Team.Color.Vegas_Gold),
+            Map.entry("Orange", Team.Color.Orange),
+            Map.entry("Royal", Team.Color.Royal)
     ).collect(
             Collectors.toMap(
                     Map.Entry::getKey,

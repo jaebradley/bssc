@@ -20,5 +20,6 @@ public record Team(
         Vegas_Gold,
         Orange,
         Royal,
+        Burnt_Orange
     }
 }
