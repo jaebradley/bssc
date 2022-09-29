@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
@@ -42,12 +43,13 @@ public class EventsFileWriter implements softball.mondaywednesdaycoed.csv.writer
             csvWriter.writeNext(HEADER);
 
             for (final Game game : games) {
+                final ZonedDateTime startTime = game.startTime().withZoneSameInstant(eventTimeZone);
                 csvWriter.writeNext(new String[]{
                         String.format("%s vs. %s", game.teams().getValue1().name(), game.teams().getValue2().name()),
-                        game.startTime().atZone(eventTimeZone).format(DateTimeFormatter.ISO_DATE),
-                        game.startTime().atZone(eventTimeZone).format(DateTimeFormatter.ISO_LOCAL_TIME),
-                        game.startTime().atZone(eventTimeZone).plusMinutes(75).format(DateTimeFormatter.ISO_DATE),
-                        game.startTime().atZone(eventTimeZone).plusMinutes(75).format(DateTimeFormatter.ISO_LOCAL_TIME),
+                        startTime.format(DateTimeFormatter.ISO_DATE),
+                        startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                        startTime.plusMinutes(75).format(DateTimeFormatter.ISO_DATE),
+                        startTime.plusMinutes(75).format(DateTimeFormatter.ISO_LOCAL_TIME),
                         Boolean.FALSE.toString(),
                         "",
                         Optional.ofNullable(ADDRESS_BY_LOCATION.get(game.location())).orElseThrow(),

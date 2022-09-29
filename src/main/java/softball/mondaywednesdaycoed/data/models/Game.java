@@ -3,11 +3,11 @@ package softball.mondaywednesdaycoed.data.models;
 import data.models.UnorderedPair;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 public record Game(
         @NotNull Location location,
-        @NotNull Instant startTime,
+        @NotNull ZonedDateTime startTime,
         @NotNull UnorderedPair<Team> teams
 ) {
 

@@ -1,15 +1,13 @@
 package softball.mondaywednesdaycoed.pdf.translators.implementations;
 
+import data.models.TwelveHourClockPeriod;
 import data.models.UnorderedPair;
+import data.serialization.interfaces.Deserializer;
 import org.jetbrains.annotations.NotNull;
 import softball.mondaywednesdaycoed.data.models.Game;
 import softball.mondaywednesdaycoed.data.models.Team;
 
-import java.time.Instant;
-import java.time.Year;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.time.*;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -38,9 +36,7 @@ public class GameLineTranslator implements softball.mondaywednesdaycoed.pdf.tran
     );
 
     @NotNull
-    private static final DateTimeFormatter dd_MM_YYYY_H_mm_A = DateTimeFormatter
-            .ofPattern("E M/d/yyyy h:m a")
-            .withZone(ZoneId.of("America/New_York"));
+    private final ZoneId gameTimeZone;
 
     @NotNull
     private final Map<String, Team> teamsByCaptainLastName;
@@ -48,13 +44,38 @@ public class GameLineTranslator implements softball.mondaywednesdaycoed.pdf.tran
     @NotNull
     private final Year seasonStartingYear;
 
+    @NotNull
+    private final Deserializer<DayOfWeek> dayOfWeekDeserializer;
 
-    public GameLineTranslator(@NotNull final Set<Team> teams, @NotNull final Year seasonStartingYear) {
+    @NotNull
+    private final Deserializer<MonthDay> monthDayDeserializer;
+
+    @NotNull
+    private final Deserializer<LocalTime> timeDeserializer;
+
+    @NotNull
+    private final Deserializer<TwelveHourClockPeriod> periodDeserializer;
+
+
+    public GameLineTranslator(
+            @NotNull final ZoneId gameTimeZone,
+            @NotNull final Set<Team> teams,
+            @NotNull final Year seasonStartingYear,
+            @NotNull final Deserializer<DayOfWeek> dayOfWeekDeserializer,
+            @NotNull final Deserializer<MonthDay> monthDayDeserializer,
+            @NotNull final Deserializer<LocalTime> timeDeserializer,
+            @NotNull final Deserializer<TwelveHourClockPeriod> periodDeserializer
+    ) {
+        this.gameTimeZone = gameTimeZone;
         this.teamsByCaptainLastName = teams
                 .stream()
                 .map(t -> Map.entry(t.captain().lastName(), t))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         this.seasonStartingYear = seasonStartingYear;
+        this.dayOfWeekDeserializer = dayOfWeekDeserializer;
+        this.monthDayDeserializer = monthDayDeserializer;
+        this.timeDeserializer = timeDeserializer;
+        this.periodDeserializer = periodDeserializer;
     }
 
     @Override
@@ -88,19 +109,34 @@ public class GameLineTranslator implements softball.mondaywednesdaycoed.pdf.tran
             return Optional.empty();
         }
 
-        final Instant startTime;
-        try {
-            startTime = dd_MM_YYYY_H_mm_A
-                    .parse(
-                            parts[0] + " " + parts[1] + "/" + seasonStartingYear.getValue() + " " + parts[4] + " " + parts[5],
-                            Instant::from
-                    );
-        } catch (DateTimeParseException e) {
+        final Optional<ZonedDateTime> startTime = dayOfWeekDeserializer.deserialize(parts[0])
+                .flatMap(dayOfWeek -> monthDayDeserializer.deserialize(parts[1])
+                        .flatMap(monthDay -> timeDeserializer.deserialize(parts[4])
+                                .flatMap(time -> periodDeserializer.deserialize(parts[5])
+                                        .flatMap(period -> {
+                                            final LocalTime updatedTime = period.equals(TwelveHourClockPeriod.PM) ? time.plusHours(12) : time;
+                                            final ZonedDateTime datetime = ZonedDateTime.of(
+                                                    LocalDate.of(seasonStartingYear.getValue(), monthDay.getMonth(), monthDay.getDayOfMonth()),
+                                                    updatedTime,
+                                                    gameTimeZone
+                                            );
+                                            if (datetime.getDayOfWeek().equals(dayOfWeek)) {
+                                                return Optional.of(datetime);
+                                            }
+
+                                            return Optional.empty();
+                                        }))));
+
+        if (startTime.isEmpty()) {
             return Optional.empty();
         }
 
         return Optional.of(
-                new Game(LOCATIONS_BY_FIELD_NAME.get(fieldName), startTime, new UnorderedPair<>(firstTeam, secondTeam))
+                new Game(
+                        LOCATIONS_BY_FIELD_NAME.get(fieldName),
+                        startTime.get(),
+                        new UnorderedPair<>(firstTeam, secondTeam)
+                )
         );
     }
 }
